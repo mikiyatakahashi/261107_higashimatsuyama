@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#101a4a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="月ボール得点" />
+<title>月ボールまでのきょりチャレンジ</title>
+<style>
+  :root{
+    --bg1:#101a4a;
+    --bg2:#442c78;
+    --card:#ffffffee;
+    --ink:#20304a;
+    --muted:#64748b;
+    --accent:#ffb703;
+    --accent2:#fb8500;
+    --cyan:#42d8ff;
+    --good:#18a875;
+    --danger:#dc4c64;
+    --shadow:0 24px 70px rgba(0,0,0,.26);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    color:white;
+    background:
+      radial-gradient(circle at 16% 18%, rgba(66,216,255,.22), transparent 24%),
+      radial-gradient(circle at 88% 24%, rgba(255,183,3,.16), transparent 18%),
+      radial-gradient(circle at 55% 85%, rgba(188,86,255,.18), transparent 22%),
+      linear-gradient(145deg,var(--bg1),var(--bg2));
+    overflow-x:hidden;
+  }
+  body::before, body::after{
+    content:"";
+    position:fixed; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(circle, #fff 0 1.3px, transparent 1.6px),
+      radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 1.3px);
+    background-size: 70px 70px, 113px 113px;
+    background-position: 7px 17px, 38px 52px;
+    opacity:.36;
+  }
+  body::after{transform:scale(1.25) rotate(7deg);opacity:.18}
+  .app{
+    min-height:100%;
+    display:grid;
+    place-items:center;
+    padding:28px 16px 36px;
+    position:relative;
+  }
+  .wrap{width:min(920px,100%); position:relative; z-index:1}
+  .topbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px}
+  .iconBtn{
+    border:1px solid rgba(255,255,255,.24);
+    background:rgba(255,255,255,.11);
+    color:white;
+    padding:10px 14px;
+    border-radius:16px;
+    cursor:pointer;
+    font-weight:800;
+    backdrop-filter:blur(8px);
+  }
+  .iconBtn:hover{background:rgba(255,255,255,.18)}
+  .card{
+    background:var(--card);
+    color:var(--ink);
+    border-radius:34px;
+    padding:36px clamp(20px,5vw,54px) 30px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,.68);
+    position:relative;
+    overflow:hidden;
+  }
+  .planet{
+    width:132px;height:132px;border-radius:50%;
+    background:
+      radial-gradient(circle at 38% 31%, #fff9ca 0 7%, transparent 8%),
+      radial-gradient(circle at 68% 58%, #d9c77d 0 11%, transparent 12%),
+      radial-gradient(circle at 33% 72%, #e8d995 0 9%, transparent 10%),
+      radial-gradient(circle at 50% 50%, #fff4ac, #e4cf75 69%, #c5a944 100%);
+    box-shadow:inset -16px -14px 20px rgba(89,69,18,.18), 0 12px 30px rgba(54,44,4,.16);
+    position:absolute;right:-24px;top:-30px;transform:rotate(-8deg)
+  }
+  .eyebrow{font-weight:900;color:#6b4bb4;letter-spacing:.04em;font-size:clamp(14px,2vw,18px)}
+  h1{font-size:clamp(31px,5vw,54px);line-height:1.1;margin:8px 0 10px;letter-spacing:.02em}
+  .lead{font-size:clamp(17px,2.3vw,22px);color:#53647a;margin:0 0 28px;line-height:1.65;font-weight:700}
+  .fixedInfo{
+    display:inline-flex;align-items:center;gap:9px;
+    background:#fff5cc;border:2px solid #ffe08a;color:#765312;
+    border-radius:999px;padding:8px 14px;font-weight:900;margin-bottom:24px
+  }
+  .inputPanel{
+    border:3px solid #dfe8ff;
+    background:linear-gradient(180deg,#f8fbff,#eef5ff);
+    border-radius:26px;
+    padding:24px;
+  }
+  label.mainLabel{display:block;font-weight:900;font-size:clamp(18px,2.5vw,24px);margin-bottom:12px}
+  .inputRow{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+  .distanceWrap{position:relative;flex:1;min-width:min(100%,310px)}
+  #distance{
+    width:100%;
+    font:inherit;font-size:clamp(28px,5vw,44px);font-weight:900;
+    color:var(--ink);
+    background:white;
+    border:3px solid #b9c9f1;
+    border-radius:20px;
+    padding:16px 84px 16px 18px;
+    outline:none;
+    box-shadow:0 4px 0 rgba(70,89,140,.08);
+  }
+  #distance:focus{border-color:#8067d8;box-shadow:0 0 0 5px rgba(128,103,216,.12)}
+  .unit{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-weight:900;color:#6b7a91;font-size:22px}
+  .primary{
+    min-width:180px;
+    border:0;border-radius:20px;padding:16px 26px;
+    background:linear-gradient(180deg,#ffca3a,#ff9f1c);
+    color:#4e2e00;font-size:22px;font-weight:950;cursor:pointer;
+    box-shadow:0 7px 0 #d87500, 0 14px 24px rgba(227,125,0,.22);
+    transition:.12s transform,.12s box-shadow;
+  }
+  .primary:hover{transform:translateY(-2px);box-shadow:0 9px 0 #d87500,0 18px 26px rgba(227,125,0,.25)}
+  .primary:active{transform:translateY(5px);box-shadow:0 2px 0 #d87500}
+  .hint{margin:12px 2px 0;color:#73829a;font-weight:700;font-size:14px}
+  .error{display:none;margin-top:14px;background:#fff0f3;color:#9e2a41;border:2px solid #ffc7d2;border-radius:15px;padding:10px 13px;font-weight:800}
+  .result{
+    display:none;
+    margin-top:24px;
+    border-radius:26px;
+    padding:24px 20px;
+    text-align:center;
+    background:linear-gradient(135deg,#fef5ca,#fff,#e4fbff);
+    border:3px solid #ffe08a;
+    position:relative;
+    overflow:hidden;
+  }
+  .result.show{display:block;animation:pop .34s ease-out}
+  @keyframes pop{0%{transform:scale(.94);opacity:0}100%{transform:scale(1);opacity:1}}
+  .calcDistanceBox{margin:0 auto 18px;max-width:520px;background:#ffffffcc;border:2px solid #cfe9ff;border-radius:20px;padding:14px 16px}
+  .calcDistanceLabel{font-weight:900;color:#45617f;font-size:16px}
+  .calcDistance{font-size:clamp(36px,7vw,58px);font-weight:1000;color:#2c78b8;line-height:1.05;margin-top:5px}
+  .calcDistance small{font-size:.38em}
+  .resultTitle{font-weight:900;color:#6b4bb4;font-size:18px}
+  .score{font-size:clamp(58px,12vw,104px);font-weight:1000;line-height:1;margin:9px 0 4px;color:#f07800;letter-spacing:-.04em}
+  .score small{font-size:.34em;letter-spacing:0}
+  .message{font-size:clamp(19px,3vw,28px);font-weight:950;margin:8px 0 5px}
+  .submessage{color:#68768b;font-weight:700;line-height:1.55}
+  .nextBtn{margin-top:18px;border:2px solid #c7d5f2;background:#fff;color:#3f5270;border-radius:16px;padding:11px 17px;font-weight:900;cursor:pointer}
+  .teacher{
+    margin-top:18px;
+    background:rgba(16,26,74,.08);
+    border:2px dashed #b8c4dd;
+    border-radius:20px;
+    padding:18px;
+    display:none;
+  }
+  .teacher.show{display:block}
+  .teacherHead{font-weight:950;font-size:18px;margin-bottom:4px}
+  .teacherText{color:#67758a;font-size:14px;line-height:1.5;margin-bottom:14px}
+  .teacherRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  #trueDistance{
+    flex:1;min-width:180px;
+    font:inherit;font-weight:900;font-size:20px;
+    border:2px solid #b9c9f1;border-radius:14px;padding:11px 12px;outline:none;
+  }
+  .saveBtn{border:0;background:#5d50c6;color:#fff;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer}
+  .saved{color:var(--good);font-weight:900;font-size:14px;min-height:1.3em;margin-top:8px}
+  .formula{margin-top:12px;color:#6d7b8f;font-size:13px;line-height:1.55}
+  .setupWarning{
+    display:none;margin:0 0 18px;padding:13px 15px;border-radius:16px;
+    background:#fff4d8;border:2px solid #ffd166;color:#7c5300;font-weight:850;line-height:1.5
+  }
+  .setupWarning.show{display:block}
+  .footer{text-align:center;color:rgba(255,255,255,.72);font-weight:700;font-size:13px;margin-top:14px}
+  .confetti{position:fixed;width:10px;height:16px;top:-30px;z-index:10;pointer-events:none;border-radius:2px;animation:fall 1.5s linear forwards}
+  @keyframes fall{to{transform:translate(var(--drift),110vh) rotate(800deg);opacity:.9}}
+  @media (max-width:640px){
+    .card{border-radius:26px;padding:28px 18px 22px}
+    .planet{width:100px;height:100px;right:-25px;top:-20px}
+    .inputPanel{padding:18px}
+    .primary{width:100%}
+  }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="wrap">
+    <div class="topbar">
+      <button class="iconBtn" id="fullscreenBtn" type="button">⛶ 全画面</button>
+      <button class="iconBtn" id="settingsBtn" type="button">⚙ 先生用設定</button>
+    </div>
+
+    <section class="card" aria-labelledby="title">
+      <div class="planet" aria-hidden="true"></div>
+      <div class="eyebrow">🌙 宇宙のことを楽しく学ぼう！</div>
+      <h1 id="title">月ボールまでの<br>きょりチャレンジ</h1>
+      <p class="lead">測定した「目と5円玉の間の長さ」を入れて、<br>月ボールまでのきょりと得点を出してみよう！</p>
+      <div class="fixedInfo">📏 月ボールの直径：20 cm　／　5円玉の穴：5 mm</div>
+
+      <div class="setupWarning" id="setupWarning">先生へ：最初に「先生用設定」から、会場で測った月ボールまでの本当のきょりを設定してください。</div>
+
+      <div class="inputPanel">
+        <label class="mainLabel" for="distance">測定した 目と5円玉の間の長さ</label>
+        <div class="inputRow">
+          <div class="distanceWrap">
+            <input id="distance" inputmode="decimal" type="number" min="0" step="any" placeholder="例：20" autocomplete="off" />
+            <span class="unit">cm</span>
+          </div>
+          <button class="primary" id="calcBtn" type="button">✨ 得点を見る</button>
+        </div>
+        <div class="hint">センチメートルで数字を入れて「得点を見る」を押してね。EnterキーでもOK！</div>
+        <div class="error" id="errorBox" role="alert"></div>
+      </div>
+
+      <section class="result" id="result" aria-live="polite">
+        <div class="calcDistanceBox">
+          <div class="calcDistanceLabel">🌙 計算した月ボールまでのきょり</div>
+          <div class="calcDistance"><span id="calculatedDistanceValue">0</span><small> m</small></div>
+        </div>
+        <div class="resultTitle">きみの得点は…</div>
+        <div class="score"><span id="scoreValue">0</span><small> 点</small></div>
+        <div class="message" id="message"></div>
+        <div class="submessage" id="submessage"></div>
+        <button class="nextBtn" id="nextBtn" type="button">↻ 次の人</button>
+      </section>
+
+      <section class="teacher" id="teacherPanel" aria-label="先生用設定">
+        <div class="teacherHead">⚙ 先生用設定</div>
+        <div class="teacherText">当日、会場で測った「月ボールまでの本当のきょり」を入力してください。設定はこのブラウザに保存されます。</div>
+        <div class="teacherRow">
+          <input id="trueDistance" type="number" min="0" step="any" inputmode="decimal" placeholder="本当のきょり（m）" />
+          <button class="saveBtn" id="saveBtn" type="button">保存する</button>
+        </div>
+        <div class="saved" id="savedText"></div>
+        <div class="formula">きょりの計算：目と5円玉の間の長さ ×（20 cm ÷ 0.5 cm）<br>採点式：100 −（|計算したきょり − 本当のきょり| ÷ 本当のきょり × 100）<br>※得点は四捨五入した整数で表示し、0点より小さくはなりません。</div>
+      </section>
+    </section>
+    <div class="footer">子ども大学ひがしまつやま・講演用ミニアプリ</div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const distanceInput = document.getElementById('distance');
+  const trueInput = document.getElementById('trueDistance');
+  const calcBtn = document.getElementById('calcBtn');
+  const result = document.getElementById('result');
+  const scoreValue = document.getElementById('scoreValue');
+  const calculatedDistanceValue = document.getElementById('calculatedDistanceValue');
+  const message = document.getElementById('message');
+  const submessage = document.getElementById('submessage');
+  const errorBox = document.getElementById('errorBox');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const teacherPanel = document.getElementById('teacherPanel');
+  const saveBtn = document.getElementById('saveBtn');
+  const savedText = document.getElementById('savedText');
+  const setupWarning = document.getElementById('setupWarning');
+  const nextBtn = document.getElementById('nextBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+  const STORAGE_KEY = 'moonBallTrueDistanceMeters';
+  const MOON_BALL_DIAMETER_CM = 20;
+  const FIVE_YEN_HOLE_DIAMETER_CM = 0.5;
+
+  function getTrueDistance() {
+    const v = parseFloat(localStorage.getItem(STORAGE_KEY));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  }
+
+  function refreshSetupState() {
+    const t = getTrueDistance();
+    setupWarning.classList.toggle('show', !t);
+    if (t) trueInput.value = t;
+  }
+
+  function showError(text) {
+    errorBox.textContent = text;
+    errorBox.style.display = 'block';
+  }
+
+  function clearError() {
+    errorBox.style.display = 'none';
+    errorBox.textContent = '';
+  }
+
+  function celebrate(level) {
+    if (level > 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#ffb703','#fb8500','#42d8ff','#8a67db','#ff6b8a','#58cc8b'];
+    for (let i = 0; i < (level === 0 ? 48 : 28); i++) {
+      const el = document.createElement('i');
+      el.className = 'confetti';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[i % colors.length];
+      el.style.setProperty('--drift', (Math.random() * 220 - 110) + 'px');
+      el.style.animationDelay = (Math.random() * .25) + 's';
+      el.style.animationDuration = (1.2 + Math.random() * .7) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }
+  }
+
+  function calculate() {
+    clearError();
+    const trueDistance = getTrueDistance();
+    const eyeToCoinCm = parseFloat(distanceInput.value);
+
+    if (!trueDistance) {
+      showError('先生用設定で、月ボールまでの本当のきょりを先に設定してください。');
+      teacherPanel.classList.add('show');
+      trueInput.focus();
+      return;
+    }
+    if (!Number.isFinite(eyeToCoinCm) || eyeToCoinCm <= 0) {
+      showError('0より大きい長さを入力してね。');
+      distanceInput.focus();
+      return;
+    }
+
+    const calculatedDistanceM = (eyeToCoinCm * MOON_BALL_DIAMETER_CM / FIVE_YEN_HOLE_DIAMETER_CM) / 100;
+    const relativeErrorPercent = Math.abs(calculatedDistanceM - trueDistance) / trueDistance * 100;
+    const score = Math.max(0, 100 - relativeErrorPercent);
+
+    calculatedDistanceValue.textContent = Number(calculatedDistanceM.toFixed(2)).toString();
+    scoreValue.textContent = Math.round(score);
+
+    if (score >= 98) {
+      message.textContent = '🌟 すごい！ほとんどぴったり！';
+      submessage.textContent = '100点まであと少し！ 本当のきょりとの差がとても小さいよ！';
+      celebrate(0);
+    } else if (score >= 95) {
+      message.textContent = '🎉 かなり近い！';
+      submessage.textContent = 'とても上手に測れたね！';
+      celebrate(1);
+    } else if (score >= 90) {
+      message.textContent = '👏 おしい！';
+      submessage.textContent = 'もう少しでぴったり。測り方を思い出してみよう！';
+    } else {
+      message.textContent = '🚀 もう一回チャレンジ！';
+      submessage.textContent = '目と5円玉の位置や、長さの測り方をもう一度確かめてみよう。';
+    }
+
+    result.classList.remove('show');
+    void result.offsetWidth;
+    result.classList.add('show');
+    result.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  settingsBtn.addEventListener('click', () => {
+    teacherPanel.classList.toggle('show');
+    if (teacherPanel.classList.contains('show')) setTimeout(() => trueInput.focus(), 100);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const v = parseFloat(trueInput.value);
+    if (!Number.isFinite(v) || v <= 0) {
+      savedText.style.color = '#dc4c64';
+      savedText.textContent = '0より大きいきょりを入力してください。';
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, String(v));
+    savedText.style.color = '#18a875';
+    savedText.textContent = `✓ 本当のきょりを ${v} m に設定しました。`;
+    setupWarning.classList.remove('show');
+    distanceInput.focus();
+  });
+
+  calcBtn.addEventListener('click', calculate);
+  distanceInput.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+  trueInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveBtn.click(); });
+
+  nextBtn.addEventListener('click', () => {
+    distanceInput.value = '';
+    result.classList.remove('show');
+    clearError();
+    distanceInput.focus();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  fullscreenBtn.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (_) {}
+  });
+
+  refreshSetupState();
+  setTimeout(() => distanceInput.focus(), 250);
+})();
+</script>
+</body>
+</html>
